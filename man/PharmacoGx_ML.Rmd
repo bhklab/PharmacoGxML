@@ -44,7 +44,7 @@ analyses between multiple datasets.
 
 \subsection{Installation and Settings}
 *PharmacoGx* requires that several packages are installed. However, all dependencies are available from CRAN or Bioconductor.
-```{r cars, eval=FALSE}
+```{r install_pharmacogx, eval=FALSE}
 source('http://bioconductor.org/biocLite.R')
 biocLite('PharmacoGx')
 ```
@@ -120,7 +120,7 @@ To begin, you would load the datasets from disk or download them using the *down
 
 We want to investigate the consistency of the data between the two datasets. The common intersection between the datasets can then be found using *intersectPSet*. We create a summary of the gene expression and drug sensitivity measures for both datasets, so we are left with one gene expression profile and one sensitivity profile per cell line within each dataset. We can then compare the gene expression and sensitivity measures between the datasets using a standard correlation coefficient. 
 ```{r Replication_curves, fig.cap="Consistency of drug response curves across studies", results='hide'}
-library(Biobase)
+library(Biobase, verbose=FALSE)
 common <- intersectPSet(pSets = list("CCLE"=CCLE, "GDSC"=GDSC), 
                         intersectOn = c("cell.lines", "drugs"), 
                         strictIntersect = TRUE)
@@ -197,10 +197,12 @@ legend("topright",
 ```
 \subsection{consistency assessment improved by Modified Concordance Index}
 To better assess the concordance of multiple pharmacogenomic studies we introduced the modified concordance index (mCI). Recognizing that the noise in the drug screening assays is high and may yield to inaccurate sensitive-based ranking of cell lines with close AAC values, the mCI only considers cell line pairs with drug sensitivity (AAC) difference greater than $\delta$ .
-```{r mci, eval=TRUE, results='hide'}
+```{r install_mCI, eval=FALSE}
 library(devtools)
 devtools::install_github("bhklab/mci", ref="light")
+```
 
+```{r mci, eval=TRUE, results='hide'}
 library(mCI)
 c_index <-  mc_index <- NULL
 for(drug in drugs){
@@ -296,22 +298,25 @@ Sactter Plot for know biomarkers (4 plots)
 \subsection{Machne Learning and Biomarker Discovery}
 Some of the widely used multivariate machine learning methods such as elastic net, Random Forest (RF) and Support Vector Machine (SVM) have been already implemented in the MLWorkshop. It optimizes hyperparameters of these methods in the training phase. To assess the performance of the predictive models, it implements *m* number of sampling with *n-fold* cross validations (CV). The performance will then be assessed by multiple metrics including pearson correlation coefficient, concordance index and modified concordance index. 
 
+```{r install_PharmacoGxML and dependencies, eval=FALSE}
+library(devtools)
+install_github("bhklab/PharmacoGx-ML")
+```
+
 ```{r machine_learning, results='asis'} 
 library(mRMRe)
 library(Biobase)
 train_expr <- t(exprs(summarizeMolecularProfiles(GDSC, mDataType="rna", fill.missing=FALSE)))
-aac <- summarizeSensitivityProfiles(GDSC, sensitivity.measure="auc_recomputed", drug="lapatinib", fill.missing=FALSE)
+aac <- summarizeSensitivityProfiles(GDSC, sensitivity.measure="auc_recomputed", drug="lapatinib", fill.missing=FALSE, verbose=FALSE)
 cells <- intersect(rownames(train_expr), names(aac))
 
 df <- as.matrix(cbind(train_expr[cells,], "lapatinib"=aac[cells]))
 
-library(devtools)
-install_github("bhklab/PharmacoGx-ML")
 
-library(PharmacoGxML)
-library(Hmisc)
-library(glmnet)
-library(caret)
+library(PharmacoGxML, verbose=FALSE)
+library(Hmisc, verbose=FALSE)
+library(glmnet, verbose=FALSE)
+library(caret, verbose=FALSE)
 par(mfrow=c(1, 3))
 method <- "ridge"
 res <- optimization(train=df[, -ncol(df), drop=F],
@@ -325,7 +330,7 @@ res <- optimization(train=df[, -ncol(df), drop=F],
 model <- res$model
 ##Prediction
 validation_expr <- summarizeMolecularProfiles(CCLE, mDataType="rna", fill.missing=FALSE)
-actual_labels <- summarizeSensitivityProfiles(CCLE, sensitivity.measure="auc_recomputed", drug="lapatinib", fill.missing=FALSE)
+actual_labels <- summarizeSensitivityProfiles(CCLE, sensitivity.measure="auc_recomputed", drug="lapatinib", fill.missing=FALSE, verbose=FALSE)
 validation_labels <- prediction(models=model$lapatinib$sampling_1,
                                 validation.set=t(exprs(validation_expr)),
                                 validation.labels=actual_labels,
