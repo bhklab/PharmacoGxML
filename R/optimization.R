@@ -99,7 +99,11 @@ optimization <- function(train,
                 predicted_labels <- predict(cvfit, newx=valid_inputs, s="lambda.min")
               },
               "random_forest"={
-                cvfit <- random_forest(train_inputs, train_labels, folds.no=5, trees.no=10)
+                cvfit <- random_forest(train_inputs, train_labels, folds.no=5, sampling.no=10, trees.no=30)
+                predicted_labels <- predict(cvfit, newx=valid_inputs)
+              },
+              "svm"={
+                cvfit <- svm(train_inputs, train_labels, folds.no=5, sampling.no=10)
                 predicted_labels <- predict(cvfit, newx=valid_inputs)
               })
         model[[drug_name]][[sprintf("sampling_%s",s)]][[sprintf("fold_%s",i)]] <- cvfit

@@ -306,7 +306,7 @@ cells <- intersect(rownames(train_expr), names(aac))
 df <- as.matrix(cbind(train_expr[cells,], "lapatinib"=aac[cells]))
 
 library(devtools)
-install_github("bhklab/PharmacoGxML")
+install_github("bhklab/PharmacoGx-ML")
 
 library(PharmacoGxML)
 library(Hmisc)
