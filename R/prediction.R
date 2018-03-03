@@ -44,7 +44,7 @@ prediction <- function(models,
                                                       alternative="greater",
                                                       logic.operator="or")$cindex
            mtext(sprintf("mCI=%s", validation_mci), 3, line=line_no)
-           line_no <- lin_no - 1
+           line_no <- line_no - 1
          })
   return(predicted_labels)
 }
