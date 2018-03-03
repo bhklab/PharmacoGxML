@@ -91,35 +91,18 @@ optimization <- function(train,
         #alpha=1 is lasso, alph=0 is ridge
         switch(method,
               "ridge"={
-                cvfit <- cv.glmnet(train_inputs, train_labels, alpha=0, nfolds=5)
-
-                model[[drug_name]][[sprintf("sampling_%s",s)]][[sprintf("fold_%s",i)]] <- cvfit
-                predictor_matrix <- as.matrix(coef(cvfit, s="lambda.min"))
-                predictors_gene_names <- rownames(predictor_matrix)[which(predictor_matrix != 0)]
-
-                # Save output
-                #predictors_gene_names <- c("Intercept", predictors_gene_names)
-                predictors_gene_names[which(predictors_gene_names == "(Intercept)")] <- "Intercept"
-                current_output <- cbind(sprintf("sampling_%s_fold_%s", s, i), predictors_gene_names, predictor_matrix[which(predictor_matrix != 0)] )
-                output <- rbind(output, current_output)
-
+                cvfit <- ridge(train_inputs, train_labels, folds.no=5)
                 predicted_labels <- predict(cvfit, newx=valid_inputs, s="lambda.min")
               },
               "lasso"={
-                cvfit <- cv.glmnet(train_inputs, train_labels, alpha=1, nfolds=5)
-                model[[drug_name]][[sprintf("sampling_%s",s)]][[sprintf("fold_%s",i)]] <- cvfit
-
-                predictor_matrix <- as.matrix(coef(cvfit, s="lambda.min"))
-                predictors_gene_names <- rownames(predictor_matrix)[which(predictor_matrix != 0)]
-
-                # Save output
-                #predictors_gene_names <- c("Intercept", predictors_gene_names)
-                predictors_gene_names[which(predictors_gene_names == "(Intercept)")] <- "Intercept"
-                current_output <- cbind(sprintf("fold_%s", i), predictors_gene_names, predictor_matrix[which(predictor_matrix != 0)] )
-                output <- rbind(output, current_output)
-
+                cvfit <- lasso(train_inputs, train_labels, folds.no=5)
                 predicted_labels <- predict(cvfit, newx=valid_inputs, s="lambda.min")
+              },
+              "random_forest"={
+                cvfit <- random_forest(train_inputs, train_labels, folds.no=5, trees.no=10)
+                predicted_labels <- predict(cvfit, newx=valid_inputs)
               })
+        model[[drug_name]][[sprintf("sampling_%s",s)]][[sprintf("fold_%s",i)]] <- cvfit
         print(sprintf("%s, %s, method: %s,   fold#: %s  sampling#: %s", drug, rownames(labels)[drug], method, i, s))
 
         all_predicted <- c(all_predicted, predicted_labels)
