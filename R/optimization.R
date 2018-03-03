@@ -9,9 +9,9 @@ optimization <- function(train,
                          features.no=100,
                          method=c("ridge", "lasso"),
                          feature.selection=c("mRMR", "variance"),
-                         assessment=c("corr", "CI", "mCI")){
+                         assessment=c("corr", "CI", "mCI", "r_squared")){
   performance <- list()
-  model <- list()
+  models <- list()
   if(!missing(result.path)){
     dir <- sprintf("%s/alpha_%s", result.path, gsub("[.]", "_", as.character(alpha)))
     if(!dir.exists(dir)){
@@ -25,7 +25,7 @@ optimization <- function(train,
   {
     drug_name <- rownames(labels)[drug]
     performance[[drug_name]] <- list()
-    model[[drug_name]] <- list()
+    models[[drug_name]] <- list()
     all_predicted <- NULL
     all_valid_labels <- NULL
     output <- NULL
@@ -44,7 +44,6 @@ optimization <- function(train,
     # par(mfrow = c(2,5))
 
     for(s in 1:sampling.no){
-      model[[drug_name]][[sprintf("sampling_%s",s)]] <- list()
       if(sampling.no == 1){
         order_of_labels <- 1:length(y)
       }else{
@@ -68,20 +67,7 @@ optimization <- function(train,
         valid_labels <- y[order_of_labels[start:end]]
 
         ##Feature selection with mRMR
-        switch(feature.selection,
-               "mRMR"={
-                 f_data <- mRMR.data(data=as.data.frame(cbind(train_inputs, train_labels), stringAsFactor=FALSE))
-                 features <- mRMR.ensemble(data=f_data,
-                                           target_indices=ncol(train_inputs) + 1,
-                                           feature_count=features.no,
-                                           solution_count=1)
-                 features <- features@feature_names[unlist(features@filters)]
-               },
-               "variance"={
-                 var_features <- apply(train_inputs, MARGIN=2, var)
-                 features <- names(sort(var_features, decreasing=T))[1:features.no]
-               })
-
+        features <- featureSelection(train_inputs, train_labels, method=feature.selection, features.no=features.no)
         train_inputs <- train_inputs[, features, drop=F]
         valid_inputs <- valid_inputs[, features, drop=F]
         #######
@@ -148,6 +134,31 @@ optimization <- function(train,
         line_no <- line_no - 1
       }
 
+      if("r_squared" %in% assessment){
+        r2 <- round((all_predicted - all_valid_labels) ^ 2, digits=2)
+        mtext(sprintf("R2=%s", r2), 3, line=line_no)
+        performance[[drug_name]][["r_squared"]] <- c(performance[[drug_name]][["r_squared"]], r2)
+        line_no <- line_no - 1
+      }
+      ##build the model for predicting future cases
+      features <- featureSelection(x, y, method=feature.selection, features.no=features.no)
+      train_set <- x[, features, drop=F]
+
+      switch(method,
+             "ridge"={
+               model <- ridge(train_set, y, folds.no=5)
+             },
+             "lasso"={
+               model <- lasso(train_set, y, folds.no=5)
+             },
+             "random_forest"={
+               model <- random_forest(train_set, y, folds.no=5, sampling.no=10, trees.no=30)
+             },
+             "svm"={
+               model <- svm(train_set, y, folds.no=5, sampling.no=10)
+             })
+      models[[drug_name]][[sprintf("sampling_%s",s)]] <- model
+
       predictions_range <- rbind(predictions_range, range(all_predicted, na.rm=T))
     }
   }
@@ -158,6 +169,6 @@ optimization <- function(train,
     save(predictions_range, file=sprintf("%s/prediction_ranges.RData", dir))
   }
 
-  return(list("performance"=performance,  "model"=model))
+  return(list("performance"=performance,  "model"=models))
 }
 

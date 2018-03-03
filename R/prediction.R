@@ -15,7 +15,7 @@ prediction <- function(models,
       predicted_labels <- cbind(predicted_labels, predict(model, newx=validation.set[,features]))
     }
   }
-  predicted_labels <- apply(predicted_labels, MARGIN=1, mean)
+  #predicted_labels <- apply(predicted_labels, MARGIN=1, mean)
   cells <- intersect(names(validation.labels), names(predicted_labels))
   validation.labels <- validation.labels[cells]
   predicted_labels <- predicted_labels[cells]
@@ -43,7 +43,7 @@ prediction <- function(models,
                                                       delta.obs=.2,
                                                       alternative="greater",
                                                       logic.operator="or")$cindex
-           mtext(sprintf("mCI=%s", validation_mci), 3, line=line_no)
+           mtext(sprintf("mCI=%s", round(validation_mci, digits=2)), 3, line=line_no)
            line_no <- line_no - 1
          })
   return(predicted_labels)
