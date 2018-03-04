@@ -25,7 +25,6 @@ optimization <- function(train,
   {
     drug_name <- rownames(labels)[drug]
     performance[[drug_name]] <- list()
-    models[[drug_name]] <- list()
     all_predicted <- NULL
     all_valid_labels <- NULL
     output <- NULL
@@ -140,27 +139,27 @@ optimization <- function(train,
         performance[[drug_name]][["r_squared"]] <- c(performance[[drug_name]][["r_squared"]], r2)
         line_no <- line_no - 1
       }
-      ##build the model for predicting future cases
-      features <- featureSelection(x, y, method=feature.selection, features.no=features.no)
-      train_set <- x[, features, drop=F]
-
-      switch(method,
-             "ridge"={
-               model <- ridge(train_set, y, folds.no=5)
-             },
-             "lasso"={
-               model <- lasso(train_set, y, folds.no=5)
-             },
-             "random_forest"={
-               model <- random_forest(train_set, y, folds.no=5, sampling.no=10, trees.no=30)
-             },
-             "svm"={
-               model <- svm(train_set, y, folds.no=5, sampling.no=10)
-             })
-      models[[drug_name]][[sprintf("sampling_%s",s)]] <- model
-
       predictions_range <- rbind(predictions_range, range(all_predicted, na.rm=T))
     }
+    ##build the model for predicting future cases
+    features <- featureSelection(x, y, method=feature.selection, features.no=features.no)
+    train_set <- x[, features, drop=F]
+
+    switch(method,
+           "ridge"={
+             model <- ridge(train_set, y, folds.no=5)
+           },
+           "lasso"={
+             model <- lasso(train_set, y, folds.no=5)
+           },
+           "random_forest"={
+             model <- random_forest(train_set, y, folds.no=5, sampling.no=10, trees.no=30)
+           },
+           "svm"={
+             model <- svm(train_set, y, folds.no=5, sampling.no=10)
+           })
+    models[[drug_name]] <- model
+
   }
   if(!missing(result.path)){
     dev.off()
