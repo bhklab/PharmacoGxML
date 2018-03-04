@@ -91,7 +91,6 @@ optimization <- function(train,
                 cvfit <- svm(train_inputs, train_labels, folds.no=5, sampling.no=10)
                 predicted_labels <- predict(cvfit, newx=valid_inputs)
               })
-        model[[drug_name]][[sprintf("sampling_%s",s)]][[sprintf("fold_%s",i)]] <- cvfit
         print(sprintf("%s, %s, method: %s,   fold#: %s  sampling#: %s", drug, rownames(labels)[drug], method, i, s))
 
         all_predicted <- c(all_predicted, predicted_labels)

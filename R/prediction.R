@@ -1,28 +1,25 @@
-prediction <- function(models,
+prediction <- function(model,
                        validation.set,
                        validation.labels,
                        method=c("ridge", "lasso"),
                        assessment=c("corr", "CI", "mCI"))
 {
   predicted_labels <- NULL
-  for(i in 1:length(models)){
-    model <- models[[i]]
-    features <- rownames(coef(model))[2:nrow(coef(model))]
+  features <- rownames(coef(model))[2:nrow(coef(model))]
 
-    if(method == "ridge" | method == "lasso" | method == "elastic_net"){
-      predicted_labels <- cbind(predicted_labels, predict(model, newx=validation.set[,features], s="lambda.min"))
-    }else{
-      predicted_labels <- cbind(predicted_labels, predict(model, newx=validation.set[,features]))
-    }
+  if(method == "ridge" | method == "lasso" | method == "elastic_net"){
+    predicted_labels <- cbind(predicted_labels, predict(model, newx=validation.set[,features], s="lambda.min"))
+  }else{
+    predicted_labels <- cbind(predicted_labels, predict(model, newx=validation.set[,features]))
   }
   #predicted_labels <- apply(predicted_labels, MARGIN=1, mean)
-  cells <- intersect(names(validation.labels), names(predicted_labels))
+  cells <- intersect(names(validation.labels), rownames(predicted_labels))
   validation.labels <- validation.labels[cells]
-  predicted_labels <- predicted_labels[cells]
+  predicted_labels <- predicted_labels[cells, 1]
 
   plot(validation.labels,
        predicted_labels,
-       main=sprintf("Validationc\n%s\nmethod:%s", "lapatinib", method),
+       main=sprintf("Validation\n%s\nmethod:%s", "lapatinib", method),
        cex.main=1, ylab="Predictions", xlab="drug sensitivity", pch=20, col="gray40")
   fit <- lm(predicted_labels ~ validation.labels)
   slope <- fit$coefficients[[2]]
