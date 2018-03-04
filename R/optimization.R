@@ -7,7 +7,7 @@ optimization <- function(train,
                          folds.no=7,
                          sampling.no=1,
                          features.no=100,
-                         method=c("ridge", "lasso"),
+                         method=c("ridge", "lasso", "random_forest", "svm"),
                          feature.selection=c("mRMR", "variance"),
                          assessment=c("corr", "CI", "mCI", "r_squared")){
   performance <- list()
@@ -29,13 +29,13 @@ optimization <- function(train,
     all_valid_labels <- NULL
     output <- NULL
     x <- train
-    y <- as.matrix(labels[drug, ])
+    y <- labels[drug, ]
 
     # Remove NA's
     toRemove <- which(is.na(y))
     if (length(toRemove != 0))
     {
-      y <- as.matrix(y[-toRemove, ])
+      y <- y[-toRemove, ]
       x <- x[-toRemove, ]
     }
 
@@ -106,12 +106,13 @@ optimization <- function(train,
            main=sprintf("%s\nmethod:%s", drug_name, method),
            cex.main=1, ylab="Predictions", xlab="drug sensitivity", pch=20, col="gray40")
 
-      abline(intercept, slope, lty=2)
       intercept <- round(intercept, 2)
       slope <- round(slope, 2)
       equation <- paste("y = ", slope, "x + ", intercept, sep = "")
-
-      mtext(equation, 3, line=-2)
+      if(method == "ridge" | method == "lasso" | method == "elastic_net"){
+        abline(intercept, slope, lty=2)
+        mtext(equation, 3, line=-2)
+      }
       line_no <- -3
       if("corr" %in% assessment){
         corr <- round(cor(all_predicted, all_valid_labels, use="pairwise.complete.obs", method = "pearson"), digits=2)

@@ -304,40 +304,43 @@ install_github("bhklab/PharmacoGx-ML")
 ```
 
 ```{r machine_learning, results='asis'} 
-library(mRMRe)
-library(Biobase)
-train_expr <- t(exprs(summarizeMolecularProfiles(GDSC, mDataType="rna", fill.missing=FALSE)))
-aac <- summarizeSensitivityProfiles(GDSC, sensitivity.measure="auc_recomputed", drug="lapatinib", fill.missing=FALSE, verbose=FALSE)
-cells <- intersect(rownames(train_expr), names(aac))
-
-df <- as.matrix(cbind(train_expr[cells,], "lapatinib"=aac[cells]))
-
-
+library(mRMRe, verbose=FALSE)
+library(Biobase, verbose=FALSE)
 library(PharmacoGxML, verbose=FALSE)
 library(Hmisc, verbose=FALSE)
 library(glmnet, verbose=FALSE)
 library(caret, verbose=FALSE)
-par(mfrow=c(1, 3))
-method <- "ridge"
-res <- optimization(train=df[, -ncol(df), drop=F],
-                    labels=t(df[, ncol(df), drop=F]),
-                    method="ridge",
-                    folds.no=2,
-                    sampling.no=1,
-                    features.no=100,
-                    feature.selection="mRMR",
-                    assessment=c("corr", "mCI"))
-model <- res$model
-##Prediction
-validation_expr <- summarizeMolecularProfiles(CCLE, mDataType="rna", fill.missing=FALSE)
-actual_labels <- summarizeSensitivityProfiles(CCLE, sensitivity.measure="auc_recomputed", drug="lapatinib", fill.missing=FALSE, verbose=FALSE)
-validation_labels <- prediction(models=model$lapatinib,
-                                validation.set=t(exprs(validation_expr)),
-                                validation.labels=actual_labels,
-                                method=method,
-                                assessment="mCI")
-      
 
+##Preparing trainig dataset
+train_expr <- t(exprs(summarizeMolecularProfiles(GDSC, mDataType="rna", fill.missing=FALSE, verbose=FALSE)))
+aac <- summarizeSensitivityProfiles(GDSC, sensitivity.measure="auc_recomputed", drug="lapatinib", fill.missing=FALSE, verbose=FALSE)
+cells <- intersect(rownames(train_expr), names(aac))
+df <- as.matrix(cbind(train_expr[cells,], "lapatinib"=aac[cells]))
+
+
+##Preparing validation dataset
+validation_expr <- summarizeMolecularProfiles(CCLE, mDataType="rna", fill.missing=FALSE, verbose=FALSE)
+actual_labels <- summarizeSensitivityProfiles(CCLE, sensitivity.measure="auc_recomputed", drug="lapatinib", fill.missing=FALSE, verbose=FALSE)
+
+
+par(mfrow=c(4, 2))
+for(method in c("ridge", "lasso", "random_forest", "svm")){
+  res <- optimization(train=df[, -ncol(df), drop=F],
+                      labels=t(df[, ncol(df), drop=F]),
+                      method=method,
+                      folds.no=5,
+                      sampling.no=1,
+                      features.no=100,
+                      feature.selection="mRMR",
+                      assessment=c("corr", "mCI"))
+  
+  validation_labels <- prediction(model=res$model$lapatinib,
+                                  validation.set=t(exprs(validation_expr)),
+                                  validation.labels=actual_labels,
+                                  method=method,
+                                  assessment="mCI")
+
+}
 
 ```
 \section{Limitations/ Future direction}

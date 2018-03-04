@@ -1,15 +1,16 @@
 prediction <- function(model,
                        validation.set,
                        validation.labels,
-                       method=c("ridge", "lasso"),
+                       method=c("ridge", "lasso", "random_forest", "svm"),
                        assessment=c("corr", "CI", "mCI"))
 {
   predicted_labels <- NULL
-  features <- rownames(coef(model))[2:nrow(coef(model))]
 
   if(method == "ridge" | method == "lasso" | method == "elastic_net"){
+    features <- rownames(coef(model))[2:nrow(coef(model))]
     predicted_labels <- cbind(predicted_labels, predict(model, newx=validation.set[,features], s="lambda.min"))
   }else{
+    features <- colnames(model$trainingData)[1:ncol(model$trainingData) -1 ]
     predicted_labels <- cbind(predicted_labels, predict(model, newx=validation.set[,features]))
   }
   #predicted_labels <- apply(predicted_labels, MARGIN=1, mean)
@@ -25,12 +26,14 @@ prediction <- function(model,
   slope <- fit$coefficients[[2]]
   intercept <- fit$coefficients[[1]]
 
-  abline(intercept, slope, lty=2)
   intercept <- round(intercept, 2)
   slope <- round(slope, 2)
   equation <- paste("y = ", slope, "x + ", intercept, sep = "")
 
-  mtext(equation, 3, line=-2)
+  if(method == "ridge" | method == "lasso" | method == "elastic_net"){
+    abline(intercept, slope, lty=2)
+    mtext(equation, 3, line=-2)
+  }
   line_no <- -3
   switch(assessment,
          "mCI"={
