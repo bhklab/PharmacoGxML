@@ -3,7 +3,7 @@ featureSelection <- function(x, y, method, features.no){
          "mRMR"={
            f_data <- mRMR.data(data=as.data.frame(cbind(x, y), stringAsFactor=FALSE))
            features <- mRMR.ensemble(data=f_data,
-                                     target_indices=ncol(train_inputs) + 1,
+                                     target_indices=ncol(x) + 1,
                                      feature_count=features.no,
                                      solution_count=1)
            features <- features@feature_names[unlist(features@filters)]

@@ -65,7 +65,7 @@ optimization <- function(train,
         valid_inputs <- x[order_of_labels[start:end], , drop=F]
         valid_labels <- y[order_of_labels[start:end]]
 
-        ##Feature selection with mRMR
+        ##Feature selection
         features <- featureSelection(train_inputs, train_labels, method=feature.selection, features.no=features.no)
         train_inputs <- train_inputs[, features, drop=F]
         valid_inputs <- valid_inputs[, features, drop=F]
