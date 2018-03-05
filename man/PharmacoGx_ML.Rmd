@@ -128,7 +128,7 @@ melted_data <- melt(CCLE.auc)
 NA_rows <- unique(which(is.na(melted_data), arr.ind=T)[,1])
 melted_data <- melted_data[-NA_rows,]
 ggplot(melted_data, aes(x=Var1,y=value)) +
-  geom_boxplot(fill=“gray”) +
+  geom_boxplot(fill="gray") +
   theme(axis.text.x=element_text(angle=90,hjust=1)) +
   xlab("Drugs") +
   ylab("AAC")
