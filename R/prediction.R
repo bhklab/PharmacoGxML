@@ -11,7 +11,7 @@ prediction <- function(model,
     predicted_labels <- cbind(predicted_labels, predict(model, newx=validation.set[,features], s="lambda.min"))
   }else{
     features <- colnames(model$trainingData)[1:ncol(model$trainingData) -1 ]
-    predicted_labels <- cbind(predicted_labels, predict(model, newx=validation.set[,features]))
+    predicted_labels <- cbind(predicted_labels, predict(model, newdata=validation.set[,features]))
   }
   #predicted_labels <- apply(predicted_labels, MARGIN=1, mean)
   cells <- intersect(names(validation.labels), rownames(predicted_labels))

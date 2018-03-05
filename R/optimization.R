@@ -85,11 +85,11 @@ optimization <- function(train,
               },
               "random_forest"={
                 cvfit <- random_forest(train_inputs, train_labels, folds.no=5, sampling.no=10, trees.no=30)
-                predicted_labels <- predict(cvfit, newx=valid_inputs)
+                predicted_labels <- predict(cvfit, newdata=valid_inputs)
               },
               "svm"={
                 cvfit <- svm(train_inputs, train_labels, folds.no=5, sampling.no=10)
-                predicted_labels <- predict(cvfit, newx=valid_inputs)
+                predicted_labels <- predict(cvfit, newdata=valid_inputs)
               })
         print(sprintf("%s, %s, method: %s,   fold#: %s  sampling#: %s", drug, rownames(labels)[drug], method, i, s))
 

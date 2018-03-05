@@ -194,7 +194,7 @@ CCLE.ic50 <- summarizeSensitivityProfiles(
   verbose=FALSE)
 
 drug <- "lapatinib"
-par(mfrow=c(1, 2))
+#par(mfrow=c(1, 2))
 myScatterPlot(x=GDSC.aac[drug,], 
               y=CCLE.aac[drug,], 
               method=c("transparent"), 
@@ -219,46 +219,6 @@ legend("topright",
                        digits=2),
                  round(paired.concordance.index(GDSC.aac[drug,],
                                                 CCLE.aac[drug,],
-                                                delta.pred=0,
-                                                delta.obs=0)$cindex, 
-                       digits=2)), 
-         bty="n")
-xx <- GDSC.ic50[drug,]
-drug_conc_range <- as.numeric(GDSC@sensitivity$info[which(GDSC@sensitivity$info$drugid == drug)[1], c("min.Dose.uM", "max.Dose.uM")])
-xx[which(xx < drug_conc_range[1])] <- drug_conc_range[1]
-xx[which(xx > drug_conc_range[2])] <- drug_conc_range[2]
-
-yy <- CCLE.ic50[drug,]
-drug_conc_range <- as.numeric(CCLE@sensitivity$info[which(GDSC@sensitivity$info$drugid == drug)[1], c("Dose1.uM", "Dose8.uM")])
-yy[which(yy < drug_conc_range[1])] <- drug_conc_range[1]
-yy[which(yy > drug_conc_range[2])] <- drug_conc_range[2]
-
-xx <- -log10(xx)
-yy <- -log10(yy)
-myScatterPlot(x=xx, 
-              y=yy, 
-              method=c("transparent"), 
-              transparency=1, pch=16, minp=50, 
-              xlim=c(0, max(max(xx, na.rm=T), max(yy, na.rm=T))), 
-              ylim=c(0, max(max(xx, na.rm=T), max(yy, na.rm=T))), 
-              main="cells response to lapatinib", 
-              cex.sub=0.7, 
-              xlab="IC50 in GDSC", 
-              ylab="IC50 in CCLE")
-legend("topright",
-         legend=sprintf("r=%s\nrs=%s\nCI=%s", 
-                 round(cor(xx, 
-                           yy, 
-                           method="pearson",
-                           use="pairwise.complete.obs"), 
-                       digits=2),
-                 round(cor(xx, 
-                           yy, 
-                           method="spearman",
-                           use="pairwise.complete.obs"), 
-                       digits=2),
-                 round(paired.concordance.index(xx,
-                                                yy,
                                                 delta.pred=0,
                                                 delta.obs=0)$cindex, 
                        digits=2)), 
