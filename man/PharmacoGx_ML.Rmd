@@ -59,9 +59,10 @@ install_github("bhklab/PharmacoGx-ML")
 
 Load *PharamacoGx* into your current workspace:
 ```{r loadlib, eval=TRUE, results='hide'}
-library(PharmacoGx)
-library(mCI)
-library(PharmacoGxML)
+library(PharmacoGx, verbose=FALSE)
+library(mCI, verbose=FALSE)
+library(PharmacoGxML, verbose=FALSE)
+library(Biobase, verbose=FALSE)
 ```
 \subsection{Downloading PharmacoSet objects}
 We have made the PharmacoSet objects of the curated datasets available for download using functions provided in the package. A table of available PharmacoSet objects can be obtained by using the *availablePSets* function. Any of the PharmacoSets in the table can then be downloaded by calling *downloadPSet*, which saves the datasets into a directory of the users choice, and returns the data into the R session. 
@@ -143,7 +144,6 @@ To begin, you would load the datasets from disk or download them using the *down
 
 We want to investigate the consistency of the data between the two datasets. The common intersection between the datasets can then be found using *intersectPSet*. We create a summary of the gene expression and drug sensitivity measures for both datasets, so we are left with one gene expression profile and one sensitivity profile per cell line within each dataset. We can then compare the gene expression and sensitivity measures between the datasets using a standard correlation coefficient. 
 ```{r Replication_curves, fig.cap="Consistency of drug response curves across studies", results='hide'}
-library(Biobase, verbose=FALSE)
 common <- intersectPSet(pSets = list("CCLE"=CCLE, "GDSC"=GDSC), 
                         intersectOn = c("cell.lines", "drugs"), 
                         strictIntersect = TRUE)
@@ -182,46 +182,85 @@ CCLE.aac <- summarizeSensitivityProfiles(
   summary.stat="median",
   verbose=FALSE)
 
-GDSC.ic50 <- log10(summarizeSensitivityProfiles(
+GDSC.ic50 <- summarizeSensitivityProfiles(
     pSet=common$GDSC, 
     sensitivity.measure='ic50_recomputed', 
     summary.stat="median",
-    verbose=FALSE))
-CCLE.ic50 <- log10(summarizeSensitivityProfiles(
+    verbose=FALSE)
+CCLE.ic50 <- summarizeSensitivityProfiles(
   pSet=common$CCLE, 
   sensitivity.measure='ic50_recomputed', 
   summary.stat="median",
-  verbose=FALSE))
+  verbose=FALSE)
 
-  drug <- "lapatinib"
+drug <- "lapatinib"
 par(mfrow=c(1, 2))
 myScatterPlot(x=GDSC.aac[drug,], 
               y=CCLE.aac[drug,], 
               method=c("transparent"), 
-              transparency=0.05, pch=16, minp=50, 
-              xlim=mylim, 
-              ylim=mylim, 
+              transparency=0.8, pch=16, minp=50, 
+              xlim=c(0, max(max(GDSC.aac[drug,], na.rm=T), max(CCLE.aac[drug,], na.rm=T))), 
+              ylim=c(0, max(max(GDSC.aac[drug,], na.rm=T), max(CCLE.aac[drug,], na.rm=T))), 
               main="cells response to lapatinib", 
-              cex.sub=0.7, sub=mysub, 
+              cex.sub=0.7, 
               xlab="AAC in GDSC", 
               ylab="AAC in CCLE")
 legend("topright",
-         legend=sprintf("rs=%s", 
+         legend=sprintf("r=%s\nrs=%s\nCI=%s", 
+                 round(cor(GDSC.aac[drug,], 
+                           CCLE.aac[drug,], 
+                           method="pearson",
+                           use="pairwise.complete.obs"), 
+                       digits=2),
                  round(cor(GDSC.aac[drug,], 
                            CCLE.aac[drug,], 
                            method="spearman",
                            use="pairwise.complete.obs"), 
+                       digits=2),
+                 round(paired.concordance.index(GDSC.aac[drug,],
+                                                CCLE.aac[drug,],
+                                                delta.pred=0,
+                                                delta.obs=0)$cindex, 
                        digits=2)), 
          bty="n")
-plot(GDSC.ic50[drug,], CCLE.ic50[drug,], 
-       xlab="GDSC", ylab="CCLE",
-       main="lapatinib (IC50)", pch=20)
+xx <- GDSC.ic50[drug,]
+drug_conc_range <- as.numeric(GDSC@sensitivity$info[which(GDSC@sensitivity$info$drugid == drug)[1], c("min.Dose.uM", "max.Dose.uM")])
+xx[which(xx < drug_conc_range[1])] <- drug_conc_range[1]
+xx[which(xx > drug_conc_range[2])] <- drug_conc_range[2]
+
+yy <- CCLE.ic50[drug,]
+drug_conc_range <- as.numeric(CCLE@sensitivity$info[which(GDSC@sensitivity$info$drugid == drug)[1], c("Dose1.uM", "Dose8.uM")])
+yy[which(yy < drug_conc_range[1])] <- drug_conc_range[1]
+yy[which(yy > drug_conc_range[2])] <- drug_conc_range[2]
+
+xx <- -log10(xx)
+yy <- -log10(yy)
+myScatterPlot(x=xx, 
+              y=yy, 
+              method=c("transparent"), 
+              transparency=1, pch=16, minp=50, 
+              xlim=c(0, max(max(xx, na.rm=T), max(yy, na.rm=T))), 
+              ylim=c(0, max(max(xx, na.rm=T), max(yy, na.rm=T))), 
+              main="cells response to lapatinib", 
+              cex.sub=0.7, 
+              xlab="IC50 in GDSC", 
+              ylab="IC50 in CCLE")
 legend("topright",
-         legend=sprintf("rs=%s", 
-                 round(cor(GDSC.ic50[drug,], 
-                           CCLE.ic50[drug,], 
+         legend=sprintf("r=%s\nrs=%s\nCI=%s", 
+                 round(cor(xx, 
+                           yy, 
+                           method="pearson",
+                           use="pairwise.complete.obs"), 
+                       digits=2),
+                 round(cor(xx, 
+                           yy, 
                            method="spearman",
                            use="pairwise.complete.obs"), 
+                       digits=2),
+                 round(paired.concordance.index(xx,
+                                                yy,
+                                                delta.pred=0,
+                                                delta.obs=0)$cindex, 
                        digits=2)), 
          bty="n")
 ```
