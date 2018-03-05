@@ -12,10 +12,12 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 \title{Biomarker discovery from large pharmacogenomics datasets}
+
 \author[1,2]{Zhaleh Safikhani}
 \author[1, 2]{Petr Smrinov}
 \author[1, 2]{Seyed Ali Madani Tonekaboni}
 \author[1,2,3]{Benjamin Haibe-Kains}
+
 \affil[1]{Princess Margaret Cancer Centre, University Health Network, Toronto Canada}
 \affil[2]{Department of Medical Biophysics, University of Toronto, Toronto Canada}
 \affil[3]{Department of Computer Science, University of Toronto, Toronto Canada}
@@ -52,8 +54,6 @@ analyses between multiple datasets.
 ```{r install_packages, eval=FALSE}
 source('http://bioconductor.org/biocLite.R')
 biocLite('PharmacoGx')
-biocLite('glmnet')
-biocLite('caret')
 
 library(devtools)
 devtools::install_github("bhklab/mci", ref="light")
@@ -128,7 +128,7 @@ melted_data <- melt(CCLE.auc)
 NA_rows <- unique(which(is.na(melted_data), arr.ind=T)[,1])
 melted_data <- melted_data[-NA_rows,]
 ggplot(melted_data, aes(x=Var1,y=value)) +
-  geom_violin() +
+  geom_boxplot(fill=“gray”) +
   theme(axis.text.x=element_text(angle=90,hjust=1)) +
   xlab("Drugs") +
   ylab("AAC")
@@ -330,6 +330,7 @@ library(Biobase, verbose=FALSE)
 library(Hmisc, verbose=FALSE)
 library(glmnet, verbose=FALSE)
 library(caret, verbose=FALSE)
+library(randomForest, verbose=FALSE)
 
 ##Preparing trainig dataset
 train_expr <- t(exprs(summarizeMolecularProfiles(GDSC, mDataType="rna", fill.missing=FALSE, verbose=FALSE)))
