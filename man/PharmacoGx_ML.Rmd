@@ -357,7 +357,6 @@ boxplot(GDSC.aac["PD-0325901", GDSC_cells]~ GDSC_mut[GDSC_cells, "BRAF"], col="g
         cex.main=1, xlab="mutation", ylab="drug sensitivity")
 
 ```
-Sactter Plot for know biomarkers (4 plots)
 
 \subsection{Machne Learning and Biomarker Discovery}
 Some of the widely used multivariate machine learning methods such as elastic net, Random Forest (RF) and Support Vector Machine (SVM) have been already implemented in the MLWorkshop. It optimizes hyperparameters of these methods in the training phase. To assess the performance of the predictive models, it implements *m* number of sampling with *n-fold* cross validations (CV). The performance will then be assessed by multiple metrics including pearson correlation coefficient, concordance index and modified concordance index. 

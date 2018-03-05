@@ -93,8 +93,10 @@ optimization <- function(train,
               })
         print(sprintf("%s, %s, method: %s,   fold#: %s  sampling#: %s", drug, rownames(labels)[drug], method, i, s))
 
-        all_predicted <- c(all_predicted, predicted_labels)
-        all_valid_labels <- c(all_valid_labels, valid_labels)
+        if(length(predicted_labels) == length(valid_labels)){
+          all_predicted <- c(all_predicted, predicted_labels)
+          all_valid_labels <- c(all_valid_labels, valid_labels)
+        }
         #plot(predicted_labels, valid_labels, main = paste("Fold", i))
       }
       fit <- lm(all_valid_labels ~ all_predicted)
