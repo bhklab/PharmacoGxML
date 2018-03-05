@@ -111,36 +111,35 @@ optimization <- function(train,
       intercept <- round(intercept, 2)
       slope <- round(slope, 2)
       equation <- paste("y = ", slope, "x + ", intercept, sep = "")
+      legend_label <- NULL
       if(method == "ridge" | method == "lasso" | method == "elastic_net"){
         abline(intercept, slope, lty=2)
-        mtext(equation, 3, line=-2)
+        legend_label <- c(legend_label, equation)
       }
-      line_no <- -3
       if("corr" %in% assessment){
         corr <- round(cor(all_predicted, all_valid_labels, use="pairwise.complete.obs", method = "pearson"), digits=2)
-        mtext(sprintf("r=%s", corr), 3, line=line_no)
+        legend_label <- c(legend_label, sprintf("r=%s", corr))
         performance[[drug_name]][["corr"]] <- c(performance[[drug_name]][["corr"]], corr)
-        line_no <- line_no - 1
       }
       if("mCI" %in% assessment){
         mci <- round(mCI::paired.concordance.index(all_predicted, all_valid_labels, delta.pred=0, delta.obs=.2)$cindex, digits=2)
-        mtext(sprintf("mCI=%s", mci), 3, line=line_no)
+        legend_label <- c(legend_label, sprintf("mCI=%s", mci))
         performance[[drug_name]][["mCI"]] <- c(performance[[drug_name]][["mCI"]], mci)
-        line_no <- line_no - 1
       }
       if("CI" %in% assessment){
         ci <- round(mCI::paired.concordance.index(all_predicted, all_valid_labels, delta.pred=0, delta.obs=0)$cindex, digits=2)
-        mtext(sprintf("CI=%s", ci), 3, line=line_no)
+        legend_label <- c(legend_label, sprintf("CI=%s", ci))
         performance[[drug_name]][["CI"]] <- c(performance[[drug_name]][["CI"]], ci)
-        line_no <- line_no - 1
       }
 
       if("r_squared" %in% assessment){
         r2 <- round((all_predicted - all_valid_labels) ^ 2, digits=2)
-        mtext(sprintf("R2=%s", r2), 3, line=line_no)
+        legend_label <- c(legend_label, sprintf("R2=%s", r2))
         performance[[drug_name]][["r_squared"]] <- c(performance[[drug_name]][["r_squared"]], r2)
-        line_no <- line_no - 1
       }
+      legend("topright",
+             legend=paste(legend_label, sep="\n"),
+             bty="n")
       predictions_range <- rbind(predictions_range, range(all_predicted, na.rm=T))
     }
     ##build the model for predicting future cases

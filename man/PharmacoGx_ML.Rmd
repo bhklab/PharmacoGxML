@@ -342,8 +342,8 @@ validation_expr <- summarizeMolecularProfiles(CCLE, mDataType="rna", fill.missin
 actual_labels <- summarizeSensitivityProfiles(CCLE, sensitivity.measure="auc_recomputed", drug="lapatinib", fill.missing=FALSE, verbose=FALSE)
 
 
-par(mfrow=c(4, 2))
 for(method in c("ridge", "lasso", "random_forest", "svm")){
+  par(mfrow=c(2, 1))
   res <- optimization(train=df[, -ncol(df), drop=F],
                       labels=t(df[, ncol(df), drop=F]),
                       method=method,
