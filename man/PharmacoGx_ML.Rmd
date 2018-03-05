@@ -50,11 +50,12 @@ analyses between multiple datasets.
 ```{r install_packages, eval=FALSE}
 source('http://bioconductor.org/biocLite.R')
 biocLite('PharmacoGx')
+biocLite('glmnet')
+biocLite('caret')
 
 library(devtools)
 devtools::install_github("bhklab/mci", ref="light")
-
-install_github("bhklab/PharmacoGx-ML")
+devtools::install_github("bhklab/PharmacoGx-ML")
 ```
 
 Load *PharamacoGx* into your current workspace:
