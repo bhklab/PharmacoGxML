@@ -13,9 +13,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 \title{Biomarker discovery from large pharmacogenomics datasets}
 \author[1,2]{Zhaleh Safikhani}
-\author[1,2,3]{Benjamin Haibe-Kains}
 \author[1, 2]{Petr Smrinov}
 \author[1, 2]{Seyed Ali Madani Tonekaboni}
+\author[1,2,3]{Benjamin Haibe-Kains}
 \affil[1]{Princess Margaret Cancer Centre, University Health Network, Toronto Canada}
 \affil[2]{Department of Medical Biophysics, University of Toronto, Toronto Canada}
 \affil[3]{Department of Computer Science, University of Toronto, Toronto Canada}
@@ -24,7 +24,7 @@ knitr::opts_chunk$set(echo = TRUE)
 \tableofcontents
 
 \section{Abstract}
-This course will focus on the challenges encountered when applying machine learning techniques in complex, high dimensional biological data. In particular, we will focus on biomarker discovery from pharmacogenomic data, which consists of developing predictors of response of cancer cell lines to chemical compounds based on their genomic features. From a methodological viewpoint, biomarker discovery is strongly linked to variable selection, through methods such as Supervised Learning with sparsity inducing norms (LASSO, Elastic Net, ...) or techniques accounting for the complex correlation structure of biological features (groupLASSO or MRMR). Yet, the main focus of this talk will be on sound use of such methods in a pharmacogenomics context, their validation and correct interpretation of the produced results. I will first discuss how to assess the quality of both the input and output data. I will further present our recent findings illustrating the importance of unified analytical platforms, data and code sharing in bioinformatics and biomedical research, as the data generation process becomes increasingly complex and requires high level of replication to achieve robust results. This is particularly relevant as our portfolio of machine learning techniques is ever enlarging, with its set of hyperparameters that can be tuning in a multitude of ways, increasing the risk of overfitting when developing multivariate predictors of drug response.
+This course will focus on the challenges encountered when applying machine learning techniques in complex, high dimensional biological data. In particular, we will focus on biomarker discovery from pharmacogenomic data, which consists of developing predictors of response of cancer cell lines to chemical compounds based on their genomic features. From a methodological viewpoint, biomarker discovery is strongly linked to variable selection, through methods such as Supervised Learning with sparsity inducing norms (e.g., ElasticNet) or techniques accounting for the complex correlation structure of biological features (e.g., mRMR). Yet, the main focus of this talk will be on sound use of such methods in a pharmacogenomics context, their validation and correct interpretation of the produced results. We will discuss how to assess the quality of both the input and output data. We will illustrate the importance of unified analytical platforms, data and code sharing in bioinformatics and biomedical research, as the data generation process becomes increasingly complex and requires high level of replication to achieve robust results. This is particularly relevant as our portfolio of machine learning techniques is ever enlarging, with its set of hyperparameters that can be tuning in a multitude of ways, increasing the risk of overfitting when developing multivariate predictors of drug response.
 
 \section{Introduction}
 
@@ -36,9 +36,11 @@ characterize drug dose response across many cell lines, and to examine the
 molecular response to drug administration. However, the experiments lack a
 standardization of protocols and annotations, hindering meta-analysis across
 several experiments.
+
 *PharmacoGx* was developed to address these challenges, by providing a
 unified framework for downloading and analyzing large pharmacogenomic datasets
 which are extensively curated to ensure maximum overlap and consistency.
+
 *PharmacoGx* is based on a level of abstraction from the raw
 experimental data, and allows bioinformaticians and biologists to work with
 data at the level of genes, drugs and cell lines. This provides a more
@@ -65,6 +67,7 @@ library(mCI, verbose=FALSE)
 library(PharmacoGxML, verbose=FALSE)
 library(Biobase, verbose=FALSE)
 ```
+
 \subsection{Downloading PharmacoSet objects}
 We have made the PharmacoSet objects of the curated datasets available for download using functions provided in the package. A table of available PharmacoSet objects can be obtained by using the *availablePSets* function. Any of the PharmacoSets in the table can then be downloaded by calling *downloadPSet*, which saves the datasets into a directory of the users choice, and returns the data into the R session. 
 ```{r download_psets, eval=TRUE, results='hide'}
