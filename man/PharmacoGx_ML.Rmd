@@ -119,8 +119,7 @@ drugDoseResponseCurve(drug="lapatinib", cellline=cells[3],
 ```
 
 \subsection{Pharmacological profiles}
-In pharmacogenomic studies Cells were also tested for their response to increasing concentrations of various compounds, 
-and form this the IC50 and AUC were computed. These pharmacological profiles are available for all the psets in *PharmacoGx*.
+In pharmacogenomic studies Cells were also tested for their response to increasing concentrations of various compounds, and form this the IC50 and AUC were computed. These pharmacological profiles are available for all the psets in *PharmacoGx*.
 
 ```{r ccle_auc, fig.cap="Cells response to drugs in CCLE"}
 library(ggplot2)
@@ -137,8 +136,6 @@ ggplot(melted_data, aes(x=Var1,y=value)) +
 #     col="gray", main="")
 ```
 
-
-
 \section{Replication}
 In this section we will investigate the consistency between the GDSC and CCLE datasets. In both CCLE and GDSC, the transcriptome of cells was profiled using an Affymatrix microarray chip. Cells were also tested for their response to increasing concentrations of various compounds, and form this the IC50 and AUC were computed. However, the cell and drugs names used between the two datasets were not consistent. Furthermore, two different microarray platforms were used. However, *PharmacoGx* allows us to overcome these differences to do a comparative study between these two datasets. 
 
@@ -147,6 +144,7 @@ GDSC was profiled using the hgu133a platform, while CCLE was profiled with the e
 To begin, you would load the datasets from disk or download them using the *downloadPSet* function above.
 
 We want to investigate the consistency of the data between the two datasets. The common intersection between the datasets can then be found using *intersectPSet*. We create a summary of the gene expression and drug sensitivity measures for both datasets, so we are left with one gene expression profile and one sensitivity profile per cell line within each dataset. We can then compare the gene expression and sensitivity measures between the datasets using a standard correlation coefficient. 
+
 ```{r Replication_curves, fig.cap="Consistency of drug response curves across studies", results='hide'}
 common <- intersectPSet(pSets = list("CCLE"=CCLE, "GDSC"=GDSC), 
                         intersectOn = c("cell.lines", "drugs"), 
@@ -228,6 +226,7 @@ legend("topright",
                        digits=2)), 
          bty="n")
 ```
+
 \subsection{consistency assessment improved by Modified Concordance Index}
 To better assess the concordance of multiple pharmacogenomic studies we introduced the modified concordance index (mCI). Recognizing that the noise in the drug screening assays is high and may yield to inaccurate sensitive-based ranking of cell lines with close AAC values, the mCI only considers cell line pairs with drug sensitivity (AAC) difference greater than $\delta$ .
 
@@ -243,14 +242,13 @@ mp <- barplot(as.vector(rbind(c_index, mc_index)), beside=TRUE, col=c("blue", "r
 text(mp, par("usr")[3], labels=as.vector(rbind(drugs, rep("", 15))), srt=45, adj=c(1.1,1.1), xpd=TRUE, cex=.8)
 abline(h=.7, lty=2)
 ```
+
 \subsection{Known Biomarkers}
 The association between molecular features and response to a given drug is modelled using a linear regression model adjusted for tissue source: 
 $$Y = \beta_{0} + \beta_{i}G_i + \beta_{t}T + \beta_{b}B$$
-where $Y$ denotes the drug sensitivity variable, $G_i$, $T$ and $B$ denote the expression of gene i, the tissue source and the experimental batch respectively, and $\beta$s are the regression coefficients. The strength of gene-drug association is quantified by $\beta_i$, above and beyond the relationship between drug sensitivity and tissue source. The variables Y and G are scaled (standard deviation equals to 1) to estimate standardized coefficients from the linear model. Significance of the gene-drug association is estimated by the statistical significance of $\beta_i$ (two-sided t test). P-values are then corrected for multiple testing using the false discovery rate (FDR) approach.
+where $Y$ denotes the drug sensitivity variable, $G_i$, $T$ and $B$ denote the expression of gene $i$, the tissue source and the experimental batch respectively, and $\beta$s are the regression coefficients. The strength of gene-drug association is quantified by $\beta_i$, above and beyond the relationship between drug sensitivity and tissue source. The variables $Y$ and $G$ are scaled (standard deviation equals to 1) to estimate standardized coefficients from the linear model. Significance of the gene-drug association is estimated by the statistical significance of $\beta_i$ (two-sided t test). P-values are then corrected for multiple testing using the false discovery rate (FDR) approach.
 
 As an example of the reproducibility of biomarker discovery across pharmacogenomic studies, we can model the significance of the association between two drugs and their known biomarkers in CCLE and GDSC. We examine the association between drug *17-AAG* and gene *NQO1*, as well as drug *PD-0325901* and gene *BRAF*:
-
-
 
 ``` {r biomarker_discovery, results='asis'} 
   features <- PharmacoGx::fNames(CCLE, "rna")[
@@ -365,7 +363,7 @@ for(method in c("ridge", "lasso", "random_forest", "svm")){
 }
 
 ```
-\section{Limitations/ Future direction}
+\section{Limitations and Future direction}
 
 \section{Session Info}
 This document was generated with the following R version and packages loaded:
