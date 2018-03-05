@@ -30,9 +30,10 @@ prediction <- function(model,
   slope <- round(slope, 2)
   equation <- paste("y = ", slope, "x + ", intercept, sep = "")
 
+  legend_label <- NULL
   if(method == "ridge" | method == "lasso" | method == "elastic_net"){
     abline(intercept, slope, lty=2)
-    mtext(equation, 3, line=-2)
+    legend_label <- c(legend_label, equation)
   }
   line_no <- -3
   switch(assessment,
@@ -43,8 +44,10 @@ prediction <- function(model,
                                                       delta.obs=.2,
                                                       alternative="greater",
                                                       logic.operator="or")$cindex
-           mtext(sprintf("mCI=%s", round(validation_mci, digits=2)), 3, line=line_no)
-           line_no <- line_no - 1
+           legend_label <- c(legend_label, sprintf("mCI=%s", round(validation_mci, digits=2)))
          })
+  legend("topright",
+         legend=paste(legend_label, sep="\n"),
+         bty="n")
   return(predicted_labels)
 }
