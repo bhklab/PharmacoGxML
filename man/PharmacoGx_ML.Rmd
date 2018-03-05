@@ -23,6 +23,9 @@ knitr::opts_chunk$set(echo = TRUE)
 \maketitle
 \tableofcontents
 
+\section{Abstract}
+This course will focus on the challenges encountered when applying machine learning techniques in complex, high dimensional biological data. In particular, we will focus on biomarker discovery from pharmacogenomic data, which consists of developing predictors of response of cancer cell lines to chemical compounds based on their genomic features. From a methodological viewpoint, biomarker discovery is strongly linked to variable selection, through methods such as Supervised Learning with sparsity inducing norms (LASSO, Elastic Net, ...) or techniques accounting for the complex correlation structure of biological features (groupLASSO or MRMR). Yet, the main focus of this talk will be on sound use of such methods in a pharmacogenomics context, their validation and correct interpretation of the produced results. I will first discuss how to assess the quality of both the input and output data. I will further present our recent findings illustrating the importance of unified analytical platforms, data and code sharing in bioinformatics and biomedical research, as the data generation process becomes increasingly complex and requires high level of replication to achieve robust results. This is particularly relevant as our portfolio of machine learning techniques is ever enlarging, with its set of hyperparameters that can be tuning in a multitude of ways, increasing the risk of overfitting when developing multivariate predictors of drug response.
+
 \section{Introduction}
 
 Pharmacogenomics holds much potential to aid in discovering drug response
@@ -44,14 +47,21 @@ analyses between multiple datasets.
 
 \subsection{Installation and Settings}
 *PharmacoGx* requires that several packages are installed. However, all dependencies are available from CRAN or Bioconductor.
-```{r install_pharmacogx, eval=FALSE}
+```{r install_packages, eval=FALSE}
 source('http://bioconductor.org/biocLite.R')
 biocLite('PharmacoGx')
+
+library(devtools)
+devtools::install_github("bhklab/mci", ref="light")
+
+install_github("bhklab/PharmacoGx-ML")
 ```
 
 Load *PharamacoGx* into your current workspace:
 ```{r loadlib, eval=TRUE, results='hide'}
 library(PharmacoGx)
+library(mCI)
+library(PharmacoGxML)
 ```
 \subsection{Downloading PharmacoSet objects}
 We have made the PharmacoSet objects of the curated datasets available for download using functions provided in the package. A table of available PharmacoSet objects can be obtained by using the *availablePSets* function. Any of the PharmacoSets in the table can then be downloaded by calling *downloadPSet*, which saves the datasets into a directory of the users choice, and returns the data into the R session. 
@@ -76,24 +86,16 @@ pie(table(CCLE@cell[,"tissueid"]),
     cex=0.8)
 ```
 
-\subsection{Pharmacological profiles}
-In pharmacogenomic studies Cells were also tested for their response to increasing concentrations of various compounds, 
-and form this the IC50 and AUC were computed. These pharmacological profiles are available for all the psets in *PharmacoGx*.
+\subsection{Plotting Drug-Dose Response Data}
+Drug-Dose response data included in the PharmacoSet objects can be conviniently plotted using the *drugDoseResponseCurve* function. Given a list of PharmacoSets, a drug name and a cell name, it will plot the drug dose response curves for the given cell-drug combination in each dataset, allowing direct comparisons of data between datasets. 
 
-```{r ccle_auc, fig.cap="Cells response to lapatinib in CCLE"}
+```{r curves, fig.cap="Cells response to lapatinib in CCLE"}
 CCLE.auc <- summarizeSensitivityProfiles(
                 pSet=CCLE,
                 sensitivity.measure="auc_published", 
                 summary.stat="median",
                 verbose=FALSE)
-hist(CCLE.auc["lapatinib",], xlab="Cells response to lapatinib(AAC)", 
-     col="gray", main="")
-```
 
-\subsection{Plotting Drug-Dose Response Data}
-Drug-Dose response data included in the PharmacoSet objects can be conviniently plotted using the *drugDoseResponseCurve* function. Given a list of PharmacoSets, a drug name and a cell name, it will plot the drug dose response curves for the given cell-drug combination in each dataset, allowing direct comparisons of data between datasets. 
-
-```{r curves, fig.cap="Cells response to lapatinib in CCLE"}
 lapatinib.aac <- CCLE.auc["lapatinib",]
 cells <- names(lapatinib.aac)[
                 c(which.min(lapatinib.aac), 
@@ -110,6 +112,27 @@ drugDoseResponseCurve(drug="lapatinib", cellline=cells[3],
                       pSets=CCLE, plot.type="Fitted", 
                       legends.label="auc_published")
 ```
+
+\subsection{Pharmacological profiles}
+In pharmacogenomic studies Cells were also tested for their response to increasing concentrations of various compounds, 
+and form this the IC50 and AUC were computed. These pharmacological profiles are available for all the psets in *PharmacoGx*.
+
+```{r ccle_auc, fig.cap="Cells response to drugs in CCLE"}
+library(ggplot2)
+library(reshape2)
+melted_data <- melt(CCLE.auc)
+NA_rows <- unique(which(is.na(melted_data), arr.ind=T)[,1])
+melted_data <- melted_data[-NA_rows,]
+ggplot(melted_data, aes(x=Var1,y=value)) +
+  geom_violin() +
+  theme(axis.text.x=element_text(angle=90,hjust=1)) +
+  xlab("Drugs") +
+  ylab("AAC")
+#hist(CCLE.auc["lapatinib",], xlab="Cells response to lapatinib(AAC)", 
+#     col="gray", main="")
+```
+
+
 
 \section{Replication}
 In this section we will investigate the consistency between the GDSC and CCLE datasets. In both CCLE and GDSC, the transcriptome of cells was profiled using an Affymatrix microarray chip. Cells were also tested for their response to increasing concentrations of various compounds, and form this the IC50 and AUC were computed. However, the cell and drugs names used between the two datasets were not consistent. Furthermore, two different microarray platforms were used. However, *PharmacoGx* allows us to overcome these differences to do a comparative study between these two datasets. 
@@ -172,9 +195,16 @@ CCLE.ic50 <- log10(summarizeSensitivityProfiles(
 
   drug <- "lapatinib"
 par(mfrow=c(1, 2))
-plot(GDSC.aac[drug,], CCLE.aac[drug,], 
-       xlab="GDSC", ylab="CCLE",
-       main="lapatinib (AAC)", pch=20)
+myScatterPlot(x=GDSC.aac[drug,], 
+              y=CCLE.aac[drug,], 
+              method=c("transparent"), 
+              transparency=0.05, pch=16, minp=50, 
+              xlim=mylim, 
+              ylim=mylim, 
+              main="cells response to lapatinib", 
+              cex.sub=0.7, sub=mysub, 
+              xlab="AAC in GDSC", 
+              ylab="AAC in CCLE")
 legend("topright",
          legend=sprintf("rs=%s", 
                  round(cor(GDSC.aac[drug,], 
@@ -197,13 +227,8 @@ legend("topright",
 ```
 \subsection{consistency assessment improved by Modified Concordance Index}
 To better assess the concordance of multiple pharmacogenomic studies we introduced the modified concordance index (mCI). Recognizing that the noise in the drug screening assays is high and may yield to inaccurate sensitive-based ranking of cell lines with close AAC values, the mCI only considers cell line pairs with drug sensitivity (AAC) difference greater than $\delta$ .
-```{r install_mCI, eval=FALSE}
-library(devtools)
-devtools::install_github("bhklab/mci", ref="light")
-```
 
 ```{r mci, eval=TRUE, results='hide'}
-library(mCI)
 c_index <-  mc_index <- NULL
 for(drug in drugs){
   tt <- mCI::paired.concordance.index(GDSC.aac[drug,], CCLE.aac[drug,], delta.pred=0, delta.obs=0, alternative="greater")
@@ -298,15 +323,10 @@ Sactter Plot for know biomarkers (4 plots)
 \subsection{Machne Learning and Biomarker Discovery}
 Some of the widely used multivariate machine learning methods such as elastic net, Random Forest (RF) and Support Vector Machine (SVM) have been already implemented in the MLWorkshop. It optimizes hyperparameters of these methods in the training phase. To assess the performance of the predictive models, it implements *m* number of sampling with *n-fold* cross validations (CV). The performance will then be assessed by multiple metrics including pearson correlation coefficient, concordance index and modified concordance index. 
 
-```{r install_PharmacoGxML and dependencies, eval=FALSE}
-library(devtools)
-install_github("bhklab/PharmacoGx-ML")
-```
 
 ```{r machine_learning, results='asis'} 
 library(mRMRe, verbose=FALSE)
 library(Biobase, verbose=FALSE)
-library(PharmacoGxML, verbose=FALSE)
 library(Hmisc, verbose=FALSE)
 library(glmnet, verbose=FALSE)
 library(caret, verbose=FALSE)
