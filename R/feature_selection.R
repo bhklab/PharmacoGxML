@@ -12,5 +12,5 @@ featureSelection <- function(x, y, method, features.no){
            var_features <- apply(x, MARGIN=2, var)
            features <- names(sort(var_features, decreasing=T))[1:features.no]
          })
-
+  return(features)
 }

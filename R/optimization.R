@@ -3,23 +3,15 @@ library(glmnet)
 library(Hmisc)
 optimization <- function(train,
                          labels,
-                         result.path,
                          folds.no=7,
                          sampling.no=1,
                          features.no=100,
                          method=c("ridge", "lasso", "random_forest", "svm"),
                          feature.selection=c("mRMR", "variance"),
-                         assessment=c("corr", "CI", "mCI", "r_squared")){
+                         assessment=c("corr", "CI", "mCI", "r_squared"),
+                         result.path){
   performance <- list()
   models <- list()
-  if(!missing(result.path)){
-    dir <- sprintf("%s/alpha_%s", result.path, gsub("[.]", "_", as.character(alpha)))
-    if(!dir.exists(dir)){
-      dir.create(dir)
-    }
-    pdf(sprintf("%s/glmnet_drugs_alpha_%s.pdf", result.path, alpha), width=12, height=120)
-    #par(mfrow=c(30, 3))
-  }
   predictions_range <- NULL
   for (drug in 1:nrow(labels))
   {
@@ -35,7 +27,7 @@ optimization <- function(train,
     toRemove <- which(is.na(y))
     if (length(toRemove != 0))
     {
-      y <- y[-toRemove, ]
+      y <- y[-toRemove]
       x <- x[-toRemove, ]
     }
 
@@ -66,7 +58,7 @@ optimization <- function(train,
         valid_labels <- y[order_of_labels[start:end]]
 
         ##Feature selection
-        features <- featureSelection(train_inputs, train_labels, method=feature.selection, features.no=features.no)
+        features <- PharmacoGxML::featureSelection(train_inputs, train_labels, method=feature.selection, features.no=features.no)
         train_inputs <- train_inputs[, features, drop=F]
         valid_inputs <- valid_inputs[, features, drop=F]
         #######
@@ -76,19 +68,19 @@ optimization <- function(train,
         #alpha=1 is lasso, alph=0 is ridge
         switch(method,
               "ridge"={
-                cvfit <- ridge(train_inputs, train_labels, folds.no=5)
+                cvfit <- PharmacoGxML::ridge(train_inputs, train_labels, folds.no=5)
                 predicted_labels <- predict(cvfit, newx=valid_inputs, s="lambda.min")
               },
               "lasso"={
-                cvfit <- lasso(train_inputs, train_labels, folds.no=5)
+                cvfit <- PharmacoGxML::lasso(train_inputs, train_labels, folds.no=5)
                 predicted_labels <- predict(cvfit, newx=valid_inputs, s="lambda.min")
               },
               "random_forest"={
-                cvfit <- random_forest(train_inputs, train_labels, folds.no=5, sampling.no=10, trees.no=30)
+                cvfit <- PharmacoGxML::random_forest(train_inputs, train_labels, folds.no=5, sampling.no=10, trees.no=30)
                 predicted_labels <- predict(cvfit, newdata=valid_inputs)
               },
               "svm"={
-                cvfit <- svm(train_inputs, train_labels, folds.no=5, sampling.no=10)
+                cvfit <- PharmacoGxML::svm(train_inputs, train_labels, folds.no=5, sampling.no=10)
                 predicted_labels <- predict(cvfit, newdata=valid_inputs)
               })
         print(sprintf("%s, %s, method: %s,   fold#: %s  sampling#: %s", drug, rownames(labels)[drug], method, i, s))
@@ -161,9 +153,6 @@ optimization <- function(train,
            })
     models[[drug_name]] <- model
 
-  }
-  if(!missing(result.path)){
-    dev.off()
   }
   if(!missing(result.path)){
     save(predictions_range, file=sprintf("%s/prediction_ranges.RData", dir))
