@@ -1,8 +1,9 @@
 # Biomarker discovery from large pharmacogenomics datasets
 
 # Instructors:
-Zhaleh Safikhani, zhaleh.safikhani@utoront.ca
-Benjamin Haib-Kains, benjamin.haibe.kains@utoronto.ca
+* Zhaleh Safikhani, zhaleh.safikhani@utoront.ca
+* Petr Smirnov, petr.smirnov@mail.utoronto.ca
+* Benjamin Haib-Kains, benjamin.haibe.kains@utoronto.ca
 
 # Workshop Description
 
