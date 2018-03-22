@@ -40,7 +40,7 @@ An example for a 45-minute workshop:
 |---------------------------------------------|------|
 | Introduction                                | 10m  |
 | Basic functionalities of PharmacoGx         | 15m  |
-| Consistency assessment betwenn datasets     | 15m  |
+| Consistency assessment between datasets     | 15m  |
 | Machine learning and biomarker discover     | 20m  |
 
 # Workshop goals and objectives
