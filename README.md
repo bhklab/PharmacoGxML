@@ -60,5 +60,5 @@ An example for a 45-minute workshop:
 * understand the structure of these darasest and how to access the features and response quantifications
 * create drug-dose response plots
 * Measure the consistency across multiple datasets and how to improve such measurements
-* Assess the validity of know biomarkers 
+* Assess whether known biomarkers are reproduced within these datasets 
 * Predict new biomarkers by applying different machine learning methods
