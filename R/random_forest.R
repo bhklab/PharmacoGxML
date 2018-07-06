@@ -1,4 +1,4 @@
-random_forest <- function(train_inputs, train_labels, folds.no, sampling.no, trees.no){
+random_forest <- function(train_inputs, train_labels, folds.no = 5, sampling.no = 10, trees.no= 30){
   if(missing(trees.no)){
     trees.no <- seq(10, 30, 10)
   }

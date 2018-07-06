@@ -332,7 +332,7 @@ library(glmnet, verbose=FALSE)
 library(caret, verbose=FALSE)
 library(randomForest, verbose=FALSE)
 
-##Preparing trainig dataset
+##Preparing training dataset
 train_expr <- t(exprs(summarizeMolecularProfiles(GDSC, mDataType="rna", fill.missing=FALSE, verbose=FALSE)))
 aac <- summarizeSensitivityProfiles(GDSC, sensitivity.measure="auc_recomputed", drug="lapatinib", fill.missing=FALSE, verbose=FALSE)
 cells <- intersect(rownames(train_expr), names(aac))
@@ -344,7 +344,7 @@ validation_expr <- summarizeMolecularProfiles(CCLE, mDataType="rna", fill.missin
 actual_labels <- summarizeSensitivityProfiles(CCLE, sensitivity.measure="auc_recomputed", drug="lapatinib", fill.missing=FALSE, verbose=FALSE)
 
 
-for(method in c("ridge", "lasso", "random_forest", "svm")){
+for(method in c(ridge, lasso, random_forest, svm)){
   par(mfrow=c(2, 1))
   res <- optimization(train=df[, -ncol(df), drop=F],
                       labels=t(df[, ncol(df), drop=F]),
@@ -355,7 +355,7 @@ for(method in c("ridge", "lasso", "random_forest", "svm")){
                       feature.selection="mRMR",
                       assessment=c("corr", "mCI"))
   
-  validation_labels <- prediction(model=res$model$lapatinib,
+  validation_labels <- validation(model=res$model$lapatinib,
                                   validation.set=t(exprs(validation_expr)),
                                   validation.labels=actual_labels,
                                   method=method,

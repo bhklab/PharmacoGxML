@@ -40,22 +40,17 @@ optimization <- function(train,
       }else{
         order_of_labels <- sample(1:length(y))
       }
-      cuts <- Hmisc::cut2(order_of_labels, m=1, g=folds.no, onlycuts= TRUE)
-      for (i in 1:(length(cuts)-1))
+      # cuts <- Hmisc::cut2(order_of_labels, m=1, g=folds.no, onlycuts= TRUE)
+      cuts <- Hmisc::cut2(order_of_labels, m=1, g=folds.no)
+
+      for (i in seq_along(unique(cuts)))
       {
         # Split the data into a training set and validation set
-        start <- cuts[i]
-        end <- cuts[i + 1] - 1
-        if (i == (length(cuts) - 1))
-        {
-          end <- cuts[i + 1]
-        }
-
-
-        train_inputs <- x[-order_of_labels[start:end], , drop=F]
-        train_labels <- y[-order_of_labels[start:end]]
-        valid_inputs <- x[order_of_labels[start:end], , drop=F]
-        valid_labels <- y[order_of_labels[start:end]]
+        
+        train_inputs <- x[-order_of_labels[as.numeric(cuts) == i], , drop=F]
+        train_labels <- y[-order_of_labels[as.numeric(cuts) == i]]
+        valid_inputs <- x[order_of_labels[as.numeric(cuts) == i], , drop=F]
+        valid_labels <- y[order_of_labels[as.numeric(cuts) == i]]
 
         ##Feature selection
         features <- PharmacoGxML::featureSelection(train_inputs, train_labels, method=feature.selection, features.no=features.no)
@@ -66,24 +61,10 @@ optimization <- function(train,
 
         # Get the cross validated elastic net fit
         #alpha=1 is lasso, alph=0 is ridge
-        switch(method,
-              "ridge"={
-                cvfit <- PharmacoGxML::ridge(train_inputs, train_labels, folds.no=5)
-                predicted_labels <- predict(cvfit, newx=valid_inputs, s="lambda.min")
-              },
-              "lasso"={
-                cvfit <- PharmacoGxML::lasso(train_inputs, train_labels, folds.no=5)
-                predicted_labels <- predict(cvfit, newx=valid_inputs, s="lambda.min")
-              },
-              "random_forest"={
-                cvfit <- PharmacoGxML::random_forest(train_inputs, train_labels, folds.no=5, sampling.no=10, trees.no=30)
-                predicted_labels <- predict(cvfit, newdata=valid_inputs)
-              },
-              "svm"={
-                cvfit <- PharmacoGxML::svm(train_inputs, train_labels, folds.no=5, sampling.no=10)
-                predicted_labels <- predict(cvfit, newdata=valid_inputs)
-              })
-        print(sprintf("%s, %s, method: %s,   fold#: %s  sampling#: %s", drug, rownames(labels)[drug], method, i, s))
+        cvfit <- do.call(method, c(train_inputs, train_labels))
+        predicted_labels <- make_predictions(cvfit, newdata=valid_inputs)
+        
+        # print(sprintf("%s, %s, method: %s,   fold#: %s  sampling#: %s", drug, rownames(labels)[drug], method, i, s))
 
         if(length(predicted_labels) == length(valid_labels)){
           all_predicted <- c(all_predicted, predicted_labels)
@@ -140,16 +121,16 @@ optimization <- function(train,
 
     switch(method,
            "ridge"={
-             model <- ridge(train_set, y, folds.no=5)
+             model <- ridge(train_set, y)
            },
            "lasso"={
-             model <- lasso(train_set, y, folds.no=5)
+             model <- lasso(train_set, y)
            },
            "random_forest"={
-             model <- random_forest(train_set, y, folds.no=5, sampling.no=10, trees.no=30)
+             model <- random_forest(train_set, y)
            },
            "svm"={
-             model <- svm(train_set, y, folds.no=5, sampling.no=10)
+             model <- svm(train_set, y)
            })
     models[[drug_name]] <- model
 

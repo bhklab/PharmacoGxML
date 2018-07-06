@@ -1,4 +1,4 @@
-svm <- function(train_inputs, train_labels, folds.no, sampling.no, kernel=c("Linear", "Radial")){
+svm <- function(train_inputs, train_labels, folds.no = 5, sampling.no = 10, kernel=c("Linear", "Radial")){
   if(missing(kernel)){
     kernel <- c("Linear", "Radial")
   }
