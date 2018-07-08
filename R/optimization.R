@@ -98,7 +98,7 @@ optimization <- function(train,
       plot(all_valid_labels,
            all_predicted,
            main=sprintf("%s\nmethod:%s", drug_name, method),
-           cex.main=1, ylab="Predictions", xlab="drug sensitivity", pch=20, col="gray40")
+           cex.main=1, ylab="Predictions", xlab="drug sensitivity", pch=20, col="gray40", xlim=c(0, 1), ylim=c(0, 1))
 
       intercept <- round(intercept, 2)
       slope <- round(slope, 2)
