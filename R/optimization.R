@@ -25,7 +25,7 @@ optimization <- function(train,
 
     # Remove NA's
     toRemove <- which(is.na(y))
-    if (length(toRemove != 0))
+    if (length(toRemove) != 0)
     {
       y <- y[-toRemove]
       x <- x[-toRemove, ]
