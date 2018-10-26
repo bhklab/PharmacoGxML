@@ -9,7 +9,7 @@ optimization <- function(train,
                          method=c("ridge", "lasso", "random_forest", "svm"),
                          feature.selection=c("mRMR", "variance"),
                          assessment=c("corr", "CI", "mCI", "r_squared"),
-                         result.path){
+                         result.path, visualize=TRUE){
   performance <- list()
   models <- list()
   predictions_range <- NULL
@@ -58,7 +58,7 @@ optimization <- function(train,
         valid_labels <- y[order_of_labels[start:end]]
 
         ##Feature selection
-        features <- PharmacoGxML::featureSelection(train_inputs, train_labels, method=feature.selection, features.no=features.no)
+        features <- featureSelection(train_inputs, train_labels, method=feature.selection, features.no=features.no)
         train_inputs <- train_inputs[, features, drop=F]
         valid_inputs <- valid_inputs[, features, drop=F]
         #######
@@ -94,11 +94,13 @@ optimization <- function(train,
       fit <- lm(all_valid_labels ~ all_predicted)
       slope <- fit$coefficients[[2]]
       intercept <- fit$coefficients[[1]]
-
-      plot(all_valid_labels,
-           all_predicted,
-           main=sprintf("%s\nmethod:%s", drug_name, method),
-           cex.main=1, ylab="Predictions", xlab="drug sensitivity", pch=20, col="gray40", xlim=c(0, 1), ylim=c(0, 1))
+      if(visualize){
+        plot(all_valid_labels,
+             all_predicted,
+             main=sprintf("%s\nmethod:%s", drug_name, method),
+             cex.main=1, ylab="Predictions", xlab="drug sensitivity", pch=20, col="gray40")
+      }
+      
 
       intercept <- round(intercept, 2)
       slope <- round(slope, 2)
