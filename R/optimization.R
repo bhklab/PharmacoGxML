@@ -94,21 +94,20 @@ optimization <- function(train,
       fit <- lm(all_valid_labels ~ all_predicted)
       slope <- fit$coefficients[[2]]
       intercept <- fit$coefficients[[1]]
+      legend_label <- NULL
       if(visualize){
         plot(all_valid_labels,
              all_predicted,
              main=sprintf("%s\nmethod:%s", drug_name, method),
              cex.main=1, ylab="Predictions", xlab="drug sensitivity", pch=20, col="gray40")
-      }
-      
 
       intercept <- round(intercept, 2)
       slope <- round(slope, 2)
       equation <- paste("y = ", slope, "x + ", intercept, sep = "")
-      legend_label <- NULL
-      if(method == "ridge" | method == "lasso" | method == "elastic_net"){
-        abline(intercept, slope, lty=2)
-        legend_label <- c(legend_label, equation)
+        if(method == "ridge" | method == "lasso" | method == "elastic_net"){
+          abline(intercept, slope, lty=2)
+          legend_label <- c(legend_label, equation)
+        }
       }
       if("corr" %in% assessment){
         corr <- round(cor(all_predicted, all_valid_labels, use="pairwise.complete.obs", method = "pearson"), digits=2)
@@ -131,9 +130,12 @@ optimization <- function(train,
         legend_label <- c(legend_label, sprintf("R2=%s", r2))
         performance[[drug_name]][["r_squared"]] <- c(performance[[drug_name]][["r_squared"]], r2)
       }
+      if(visualize){
+        
       legend("topright",
              legend=paste(legend_label, sep="\n"),
              bty="n")
+      }
       predictions_range <- rbind(predictions_range, range(all_predicted, na.rm=T))
     }
     ##build the model for predicting future cases
