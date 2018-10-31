@@ -23,15 +23,16 @@ optimization <- function(train,
     output <- NULL
     x <- train
     y <- labels[drug, ]
-
+    x_raw <- train_raw
+    
     # Remove NA's
     toRemove <- which(is.na(y))
     if (length(toRemove) != 0)
     {
       y <- y[-toRemove]
       x <- x[-toRemove, ]
-      if(!is.null(train_raw)){
-        train_raw <- train_raw[-toRemove, ]
+      if(!is.null(x_raw)){
+        x_raw <- x_raw[-toRemove, ]
       }
     }
 
@@ -60,10 +61,10 @@ optimization <- function(train,
         train_labels <- y[-order_of_labels[start:end]]
         valid_inputs <- x[order_of_labels[start:end], , drop=F]
         valid_labels <- y[order_of_labels[start:end]]
-        if(!is.null(train_raw)){
-          train_raw_inputs <- train_raw[-order_of_labels[start:end], , drop=F]
+        if(!is.null(x_raw)){
+          x_raw_inputs <- x_raw[-order_of_labels[start:end], , drop=F]
         }else{
-          train_raw_inputs <- NULL
+          x_raw_inputs <- NULL
         }
         ##Feature selection
         features <- featureSelection(train_inputs, 
@@ -71,7 +72,7 @@ optimization <- function(train,
                                      method=feature.selection, 
                                      features.no=features.no, 
                                      shrink=shrink,
-                                     x_raw=train_raw_inputs)
+                                     x_raw=x_raw_inputs)
         train_inputs <- train_inputs[, features, drop=F]
         valid_inputs <- valid_inputs[, features, drop=F]
         #######
@@ -157,7 +158,7 @@ optimization <- function(train,
                                  method=feature.selection, 
                                  features.no=features.no, 
                                  shrink=shrink,
-                                 x_raw=train_raw)
+                                 x_raw=x_raw)
     train_set <- x[, features, drop=F]
 
     switch(method,
