@@ -8,8 +8,8 @@ featureSelection <- function(x, y, method, features.no, shrink=T, x_raw=NULL){
              var_features <- apply(x_raw, MARGIN=2, sd, na.rm=T)
              mad_features <- apply(x_raw, MARGIN=2, mad, na.rm=T)
              
-             x <- x[, which(var_features > quantile(var_features, .75) & 
-                            mad_features > quantile(mad_features, .75)), drop=FALSE]
+             x <- x[, which(var_features > quantile(var_features, .75, na.rm=T) & 
+                            mad_features > quantile(mad_features, .75, na.rm=T)), drop=FALSE]
            }
            
            f_data <- mRMR.data(data=as.data.frame(cbind(x, y), stringAsFactor=FALSE))
