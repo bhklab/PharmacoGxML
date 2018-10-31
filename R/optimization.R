@@ -139,7 +139,7 @@ optimization <- function(train,
       }
 
       if("r_squared" %in% assessment){
-        r2 <- round((all_predicted - all_valid_labels) ^ 2, digits=2)
+        r2 <- round(1-(sum((all_predicted - all_valid_labels) ^ 2)/sum((all_valid_labels - mean(all_valid_labels))^2)), digits=2)
         legend_label <- c(legend_label, sprintf("R2=%s", r2))
         performance[[drug_name]][["r_squared"]] <- c(performance[[drug_name]][["r_squared"]], r2)
       }
