@@ -3,13 +3,14 @@ library(glmnet)
 library(Hmisc)
 optimization <- function(train,
                          labels,
+                         train_raw=NULL,
                          folds.no=7,
                          sampling.no=1,
                          features.no=100,
                          method=c("ridge", "lasso", "random_forest", "svm"),
                          feature.selection=c("mRMR", "variance"),
                          assessment=c("corr", "CI", "mCI", "r_squared"),
-                         result.path, visualize=TRUE){
+                         result.path, visualize=TRUE, shrink=FALSE){
   performance <- list()
   models <- list()
   predictions_range <- NULL
@@ -29,6 +30,9 @@ optimization <- function(train,
     {
       y <- y[-toRemove]
       x <- x[-toRemove, ]
+      if(!is.null(train_raw)){
+        train_raw <- train_raw[-toRemove, ]
+      }
     }
 
     # Cross validation
@@ -56,9 +60,18 @@ optimization <- function(train,
         train_labels <- y[-order_of_labels[start:end]]
         valid_inputs <- x[order_of_labels[start:end], , drop=F]
         valid_labels <- y[order_of_labels[start:end]]
-
+        if(!is.null(train_raw)){
+          train_raw_inputs <- train_raw[-order_of_labels[start:end], , drop=F]
+        }else{
+          train_raw_inputs <- NULL
+        }
         ##Feature selection
-        features <- featureSelection(train_inputs, train_labels, method=feature.selection, features.no=features.no)
+        features <- featureSelection(train_inputs, 
+                                     train_labels, 
+                                     method=feature.selection, 
+                                     features.no=features.no, 
+                                     shrink=shrink,
+                                     x_raw=train_raw_inputs)
         train_inputs <- train_inputs[, features, drop=F]
         valid_inputs <- valid_inputs[, features, drop=F]
         #######
@@ -139,7 +152,12 @@ optimization <- function(train,
       predictions_range <- rbind(predictions_range, range(all_predicted, na.rm=T))
     }
     ##build the model for predicting future cases
-    features <- featureSelection(x, y, method=feature.selection, features.no=features.no)
+    features <- featureSelection(x, 
+                                 y, 
+                                 method=feature.selection, 
+                                 features.no=features.no, 
+                                 shrink=shrink,
+                                 x_raw=train_raw)
     train_set <- x[, features, drop=F]
 
     switch(method,
