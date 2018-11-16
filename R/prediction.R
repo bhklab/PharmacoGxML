@@ -6,6 +6,9 @@ prediction <- function(model,
 
   if(method == "ridge" | method == "lasso" | method == "elastic_net"){
     features <- rownames(coef(model))[2:nrow(coef(model))]
+    if(length(intersect(colnames(test.set), features)) != length(features)){
+      return(rep(NA, nrow(test.set)))
+    }
     predicted_labels <- cbind(predicted_labels, predict(model, newx=test.set[,features], s="lambda.min"))
   }else{
     features <- colnames(model$trainingData)[1:ncol(model$trainingData) -1 ]
