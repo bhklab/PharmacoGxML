@@ -22,11 +22,11 @@ featureSelection <- function(x, y, method, features.no, shrink=T, x_raw=NULL){
            features <- features@feature_names[unlist(features@filters)]
          },
          "variance"={
-           var_features <- apply(x_raw, MARGIN=2, var)
+           var_features <- apply(x_raw, MARGIN=2, var, na.rm=T)
            features <- names(sort(var_features, decreasing=T))[1:features.no]
          },
          "mad"={
-           var_features <- apply(x_raw, MARGIN=2, mad)
+           var_features <- apply(x_raw, MARGIN=2, mad, na.rm=T)
            features <- names(sort(var_features, decreasing=T))[1:features.no]
          })
   return(features)
