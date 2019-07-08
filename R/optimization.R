@@ -9,7 +9,7 @@ optimization <- function(train,
                          features.no=100,
                          method=c("ridge", "lasso", "random_forest", "svm"),
                          feature.selection=c("mRMR", "variance"),
-                         assessment=c("corr", "CI", "mCI", "r_squared"),
+                         assessment=c("corr", "CI", "rCI", "r_squared"),
                          result.path, visualize=TRUE, shrink=FALSE, mci.delta=.2){
   performance <- list()
   models <- list()
@@ -128,13 +128,13 @@ optimization <- function(train,
         legend_label <- c(legend_label, sprintf("r=%s", corr))
         performance[[drug_name]][["corr"]] <- c(performance[[drug_name]][["corr"]], corr)
       }
-      if("mCI" %in% assessment){
-        mci <- round(mCI::paired.concordance.index(all_predicted, all_valid_labels, delta.pred=0, delta.obs=mci.delta)$cindex, digits=2)
-        legend_label <- c(legend_label, sprintf("mCI=%s", mci))
-        performance[[drug_name]][["mCI"]] <- c(performance[[drug_name]][["mCI"]], mci)
+      if("rCI" %in% assessment){
+        mci <- round(wCI::paired.concordance.index(all_predicted, all_valid_labels, delta.pred=0, delta.obs=mci.delta)$cindex, digits=2)
+        legend_label <- c(legend_label, sprintf("rCI=%s", mci))
+        performance[[drug_name]][["rCI"]] <- c(performance[[drug_name]][["rCI"]], mci)
       }
       if("CI" %in% assessment){
-        ci <- round(mCI::paired.concordance.index(all_predicted, all_valid_labels, delta.pred=0, delta.obs=0)$cindex, digits=2)
+        ci <- round(wCI::paired.concordance.index(all_predicted, all_valid_labels, delta.pred=0, delta.obs=0)$cindex, digits=2)
         legend_label <- c(legend_label, sprintf("CI=%s", ci))
         performance[[drug_name]][["CI"]] <- c(performance[[drug_name]][["CI"]], ci)
       }

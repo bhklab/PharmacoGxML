@@ -2,7 +2,7 @@ validation <- function(model,
                        validation.set,
                        validation.labels,
                        method=c("ridge", "lasso", "random_forest", "svm"),
-                       assessment=c("corr", "CI", "mCI"))
+                       assessment=c("corr", "CI", "rCI"))
 {
   predicted_labels <- NULL
 
@@ -38,14 +38,14 @@ validation <- function(model,
   }
   line_no <- -3
   switch(assessment,
-         "mCI"={
+         "rCI"={
            validation_mci <- paired.concordance.index(predictions=predicted_labels,
                                                       observations=validation.labels,
                                                       delta.pred=0,
                                                       delta.obs=.2,
                                                       alternative="greater",
                                                       logic.operator="or")$cindex
-           legend_label <- c(legend_label, sprintf("mCI=%s", round(validation_mci, digits=2)))
+           legend_label <- c(legend_label, sprintf("rCI=%s", round(validation_mci, digits=2)))
          })
   legend("topright",
          legend=paste(legend_label, sep="\n"),
