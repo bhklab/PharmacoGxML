@@ -1,4 +1,4 @@
-library(mCI)
+library(wCI)
 library(glmnet)
 library(Hmisc)
 optimization <- function(train,
